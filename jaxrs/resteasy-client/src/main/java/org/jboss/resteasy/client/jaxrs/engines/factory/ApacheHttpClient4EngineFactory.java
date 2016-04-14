@@ -23,7 +23,14 @@ public class ApacheHttpClient4EngineFactory
     {
         if(isConfigurableAvailable())
         {
-            return new ApacheHttpClient4ConfigStyleEngine();
+            ApacheHttpClient4Engine engine = new ApacheHttpClient4ConfigStyleEngine();
+            //We have to check that the HttpClient to be used has the configurable interface
+            if(isUsingOldStyleConfiguration(engine.getHttpClient()))
+            {
+              engine.close();
+              return new ApacheHttpClient4Engine();
+            }
+            return engine;
         }
         else
         {
@@ -71,11 +78,14 @@ public class ApacheHttpClient4EngineFactory
     {
         if(!isConfigurableAvailable())
         {
-            if(!(client instanceof Configurable)) // Yep, they could be using a new style config with a client that we can't actually use
-            {
-                return true;
-            }
+            return true;
         }
+
+        if(!(client instanceof Configurable)) // Yep, they could be using a new style config with a client that we can't actually use
+        {
+            return true;
+        }
+
         RequestConfig config = ((Configurable) client).getConfig();
         return config == null;
     }
