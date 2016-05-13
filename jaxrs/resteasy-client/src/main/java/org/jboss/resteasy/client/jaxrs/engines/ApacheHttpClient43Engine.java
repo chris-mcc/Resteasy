@@ -14,28 +14,30 @@ import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
  * To accommodate the configuration style this class overrides the methods that get/set from the old Parameters
  * Otherwise only the old style parameters will get picked up.
  *
- * Setting a proxy is NOT supported.  If you need to set a proxy please pass in a pre-configured HTTP client.
- *
  * Consider using the factory ApacheHttpClient4EngineFactory instead of using this class directly
  */
-public class ApacheHttpClient4ConfigStyleEngine extends ApacheHttpClient4Engine
+public class ApacheHttpClient43Engine extends ApacheHttpClient4Engine
 {
 
-    public ApacheHttpClient4ConfigStyleEngine()
+    public ApacheHttpClient43Engine()
     {
         super();
     }
 
-    public ApacheHttpClient4ConfigStyleEngine(final HttpClient httpClient) {
+    public ApacheHttpClient43Engine(final HttpHost defaultProxy) {
+        super(defaultProxy);
+    }
+
+    public ApacheHttpClient43Engine(final HttpClient httpClient) {
         super(httpClient);
     }
 
-    public ApacheHttpClient4ConfigStyleEngine(final HttpClient httpClient, final boolean closeHttpClient)
+    public ApacheHttpClient43Engine(final HttpClient httpClient, final boolean closeHttpClient)
     {
         super(httpClient, closeHttpClient);
     }
 
-    public ApacheHttpClient4ConfigStyleEngine(final HttpClient httpClient, final HttpContext httpContext)
+    public ApacheHttpClient43Engine(final HttpClient httpClient, final HttpContext httpContext)
     {
         super(httpClient, httpContext);
     }
@@ -45,6 +47,10 @@ public class ApacheHttpClient4ConfigStyleEngine extends ApacheHttpClient4Engine
     {
         final HttpClientBuilder builder = HttpClientBuilder.create();
         RequestConfig.Builder requestBuilder = RequestConfig.custom();
+        if(defaultProxy != null)
+        {
+            requestBuilder.setProxy(defaultProxy);
+        }
         builder.setDefaultRequestConfig(requestBuilder.build());
         return builder.build();
     }
@@ -54,12 +60,6 @@ public class ApacheHttpClient4ConfigStyleEngine extends ApacheHttpClient4Engine
     {
         Configurable clientConfiguration = (Configurable) httpClient;
         return clientConfiguration.getConfig().getProxy();
-    }
-
-    @Override
-    public void setDefaultProxy(final HttpHost defaultProxy)
-    {
-        throw new IllegalArgumentException("Cannot set proxy.  Please pass in a pre-configured httpclient instead.");
     }
 
     @Override

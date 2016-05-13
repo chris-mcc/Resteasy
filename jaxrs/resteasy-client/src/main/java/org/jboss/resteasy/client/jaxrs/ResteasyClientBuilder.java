@@ -2,6 +2,7 @@ package org.jboss.resteasy.client.jaxrs;
 
 import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
@@ -479,13 +480,13 @@ public class ResteasyClientBuilder extends ClientBuilder
          {
              HttpClientParams.setConnectionManagerTimeout(params, connectionCheckoutTimeoutMs);
          }
+         params.setParameter(ConnRoutePNames.DEFAULT_PROXY, defaultProxy);
          httpClient = new DefaultHttpClient(cm, params);
          ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient, true);
          engine.setResponseBufferSize(responseBufferSize);
          engine.setHostnameVerifier(verifier);
          // this may be null.  We can't really support this with Apache Client.
          engine.setSslContext(theContext);
-         engine.setDefaultProxy(defaultProxy);
          return engine;
       }
       catch (Exception e)

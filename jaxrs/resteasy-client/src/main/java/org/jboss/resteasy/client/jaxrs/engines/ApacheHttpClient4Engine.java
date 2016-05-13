@@ -16,6 +16,8 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.SyncBasicHttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.jboss.resteasy.client.core.SelfExpandingBufferredInputStream;
@@ -63,6 +65,7 @@ public class ApacheHttpClient4Engine implements ClientHttpEngine
    protected SSLContext sslContext;
    protected HostnameVerifier hostnameVerifier;
    protected int responseBufferSize = 8192;
+   protected HttpHost defaultProxy = null;
 
    /**
     * For uploading File's over JAX-RS framework, this property, together with {@link #fileUploadMemoryUnit},
@@ -119,6 +122,12 @@ public class ApacheHttpClient4Engine implements ClientHttpEngine
 
    public ApacheHttpClient4Engine()
    {
+      this.httpClient = createDefaultHttpClient();
+      this.createdHttpClient = true;
+   }
+
+   public ApacheHttpClient4Engine(final HttpHost defaultProxy) {
+      this.defaultProxy = defaultProxy;
       this.httpClient = createDefaultHttpClient();
       this.createdHttpClient = true;
    }
@@ -238,11 +247,7 @@ public class ApacheHttpClient4Engine implements ClientHttpEngine
    {
 	   return (HttpHost) httpClient.getParams().getParameter(ConnRoutePNames.DEFAULT_PROXY);
    }
-   
-   public void setDefaultProxy(HttpHost defaultProxy)
-   {
-	   httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, defaultProxy);
-   }
+
    public static CaseInsensitiveMap<String> extractHeaders(
            HttpResponse response)
    {
@@ -410,7 +415,13 @@ public class ApacheHttpClient4Engine implements ClientHttpEngine
 
    protected HttpClient createDefaultHttpClient()
    {
-      return new DefaultHttpClient();
+      HttpParams params = new SyncBasicHttpParams();
+      DefaultHttpClient.setDefaultHttpParams(params);
+      if(defaultProxy != null)
+      {
+         params.setParameter(ConnRoutePNames.DEFAULT_PROXY, defaultProxy);
+      }
+      return new DefaultHttpClient(params);
    }
 
    protected void setRedirectRequired(final ClientInvocation request, HttpRequestBase httpMethod)
